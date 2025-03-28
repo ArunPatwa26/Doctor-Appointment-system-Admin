@@ -5,109 +5,185 @@ import { assets } from '../../assets/assets_admin/assets';
 
 const DoctorAppointments = () => {
   const { dToken, appointments, getAppointments, cancelAppointment, completeAppointment } = useContext(DoctorContext);
-
   const { calculateAge, slotdateFormate } = useContext(AppContext);
 
   useEffect(() => {
     if (dToken) {
       getAppointments();
     }
-  }, [dToken]);
+  }, [dToken, getAppointments]);
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
-      {/* Page Header */}
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-blue-700">
-        Doctor Appointments
-      </h1>
-
-      {/* Table Container */}
-      <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-        {/* Table Header */}
-        <div className="hidden md:grid grid-cols-7 gap-4 font-semibold text-gray-700 border-b pb-3 mb-3">
-          <p>#</p>
-          <p>Patient</p>
-          <p>Payment</p>
-          <p>Age</p>
-          <p>Date & Time</p>
-          <p>Fees</p>
-          <p>Action</p>
+    <div className="bg-gray-50 min-h-screen pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="pt-6 pb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Appointments</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage all your upcoming and past appointments
+          </p>
         </div>
 
-        {/* Table Rows */}
-        {appointments && appointments.length > 0 ? (
-          appointments.reverse().map((appointment, index) => (
-            <div
-              key={appointment._id}
-              className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center text-gray-600 border-b py-3"
-            >
-              {/* Index */}
-              <p className="text-center md:text-left">{index + 1}</p>
+        {/* Appointment Cards */}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          {/* Desktop Table Header */}
+          <div className="hidden md:grid grid-cols-12 gap-4 bg-gray-50 px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="col-span-1">#</div>
+            <div className="col-span-3">Patient</div>
+            <div className="col-span-1">Payment</div>
+            <div className="col-span-1">Age</div>
+            <div className="col-span-3">Date & Time</div>
+            <div className="col-span-1">Fees</div>
+            <div className="col-span-2">Status</div>
+          </div>
 
-              {/* Patient Info */}
-              <div className="flex items-center justify-center md:justify-start">
-                <img
-                  src={appointment.userData.image}
-                  alt={appointment.userData.name}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-1"
-                />
-                <div>
-                  <p className="font-medium text-sm sm:text-base text-center md:text-left">
-                    {appointment.userData.name}
-                  </p>
+          {appointments && appointments.length > 0 ? (
+            [...appointments].reverse().map((appointment, index) => (
+              <div
+                key={appointment._id}
+                className="border-t border-gray-200 hover:bg-gray-50 transition-colors duration-150"
+              >
+                {/* Desktop View */}
+                <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 items-center">
+                  <div className="col-span-1 text-gray-600">{index + 1}</div>
+                  <div className="col-span-3 flex items-center">
+                    <img
+                      src={appointment.userData.image}
+                      alt={appointment.userData.name}
+                      className="h-10 w-10 rounded-full mr-3"
+                    />
+                    <span className="font-medium text-gray-900">
+                      {appointment.userData.name}
+                    </span>
+                  </div>
+                  <div className={`col-span-1 ${appointment.payment ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {appointment.payment ? 'Online' : 'Cash'}
+                  </div>
+                  <div className="col-span-1 text-gray-600">
+                    {calculateAge(appointment.userData.dob)}
+                  </div>
+                  <div className="col-span-3 text-gray-600">
+                    {slotdateFormate(appointment.slotDate)} at {appointment.slotTime}
+                  </div>
+                  <div className="col-span-1 text-gray-600">${appointment.amount}</div>
+                  <div className="col-span-2">
+                    {appointment.cancelled ? (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                        Cancelled
+                      </span>
+                    ) : appointment.isCompleted ? (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Completed
+                      </span>
+                    ) : (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => cancelAppointment(appointment._id)}
+                          className="p-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+                          title="Cancel Appointment"
+                        >
+                          <img src={assets.cancel_icon} alt="Cancel" className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => completeAppointment(appointment._id)}
+                          className="p-1 rounded-md bg-green-50 text-green-600 hover:bg-green-100"
+                          title="Complete Appointment"
+                        >
+                          <img src={assets.tick_icon} alt="Complete" className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile View */}
+                <div className="md:hidden p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center">
+                      <img
+                        src={appointment.userData.image}
+                        alt={appointment.userData.name}
+                        className="h-12 w-12 rounded-full mr-3"
+                      />
+                      <div>
+                        <h3 className="font-medium text-gray-900">{appointment.userData.name}</h3>
+                        <p className="text-sm text-gray-500">
+                          Age: {calculateAge(appointment.userData.dob)}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      {appointment.cancelled ? (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                          Cancelled
+                        </span>
+                      ) : appointment.isCompleted ? (
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          Completed
+                        </span>
+                      ) : (
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => cancelAppointment(appointment._id)}
+                            className="p-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+                            title="Cancel"
+                          >
+                            <img src={assets.cancel_icon} alt="Cancel" className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => completeAppointment(appointment._id)}
+                            className="p-1 rounded-md bg-green-50 text-green-600 hover:bg-green-100"
+                            title="Complete"
+                          >
+                            <img src={assets.tick_icon} alt="Complete" className="h-5 w-5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <p className="text-gray-500">Date & Time</p>
+                      <p className="text-gray-900">
+                        {slotdateFormate(appointment.slotDate)} at {appointment.slotTime}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Payment</p>
+                      <p className={appointment.payment ? 'text-green-600' : 'text-yellow-600'}>
+                        {appointment.payment ? 'Online' : 'Cash'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Fees</p>
+                      <p className="text-gray-900">${appointment.amount}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Payment Status */}
-              <p
-                className={`${
-                  appointment.payment ? 'text-green-600' : 'text-red-600'
-                } text-center `}
+            ))
+          ) : (
+            <div className="px-6 py-12 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {appointment.payment ? 'Online' : 'cash'}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No appointments</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                You don't have any appointments scheduled yet.
               </p>
-
-              {/* Age */}
-              <p className="text-center md:text-left">
-                {calculateAge(appointment.userData.dob)}
-              </p>
-
-              {/* Date & Time */}
-              <p className="text-center md:text-left">
-                {slotdateFormate(appointment.slotDate)} & {appointment.slotTime}
-              </p>
-
-              {/* Fees */}
-              <p className="text-center md:text-left">${appointment.amount}</p>
-
-              {/* Action */}
-              <div className="flex justify-center md:justify-start space-x-2">
-                {appointment.cancelled ? (
-                  <p className="text-red-600 font-medium">Cancelled</p>
-                ) : appointment.isCompleted ? (
-                  <p className="text-green-600 font-medium">Completed</p>
-                ) : (
-                  <>
-                    <img
-                      src={assets.cancel_icon}
-                      alt="Cancel Icon"
-                      className="w-8 h-8 sm:w-10 sm:h-10 cursor-pointer"
-                      onClick={() => cancelAppointment(appointment._id)}
-                    />
-                    <img
-                      src={assets.tick_icon}
-                      alt="Tick Icon"
-                      className="w-8 h-8 sm:w-10 sm:h-10 cursor-pointer"
-                      onClick={() => completeAppointment(appointment._id)}
-                    />
-                  </>
-                )}
-              </div>
             </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-600">No appointments found.</p>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
